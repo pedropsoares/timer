@@ -45,12 +45,18 @@ export const Home = () => {
   const activeCycles = cycles.find(({ id }) => id === activeCycleId)
 
   useEffect(() => {
+    let interval: number
+
     if (activeCycles) {
-      setInterval(() => {
+      interval = setInterval(() => {
         setAmountSecondsPassed(
           differenceInSeconds(new Date(), activeCycles.starDate),
         )
-      })
+      }, 1000)
+    }
+
+    return () => {
+      clearInterval(interval)
     }
   }, [activeCycles])
 
@@ -69,6 +75,7 @@ export const Home = () => {
 
     setCycles((state) => [...state, newCycle])
     setActiveCycleId(id)
+    setAmountSecondsPassed(0)
 
     reset()
   }
@@ -80,6 +87,12 @@ export const Home = () => {
 
   const minutes = String(minutesAmount).padStart(2, '0')
   const seconds = String(secondsAmount).padStart(2, '0')
+
+  useEffect(() => {
+    if (activeCycles) {
+      document.title = `Restam - ${minutes}:${seconds}`
+    }
+  }, [activeCycles, minutes, seconds])
 
   return (
     <HomeContainer>
