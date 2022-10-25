@@ -21,7 +21,8 @@ interface Cycle {
   task: string
   minutesAmount: number
   starDate: Date
-  InterruptedDate?: Date
+  interruptedDate?: Date
+  fineshedDate?: Date
 }
 
 const newCycleValidationSchema = zod.object({
@@ -45,22 +46,41 @@ export const Home = () => {
   })
 
   const activeCycles = cycles.find(({ id }) => id === activeCycleId)
+  const totalSeconds = activeCycles ? activeCycles.minutesAmount * 60 : 0
 
   useEffect(() => {
     let interval: number
 
     if (activeCycles) {
       interval = setInterval(() => {
-        setAmountSecondsPassed(
-          differenceInSeconds(new Date(), activeCycles.starDate),
+        const secondsDiference = differenceInSeconds(
+          new Date(),
+          activeCycles.starDate,
         )
+
+        if (secondsDiference >= totalSeconds) {
+          setCycles((state) =>
+            state.map((cycle) => {
+              if (cycle.id === activeCycleId) {
+                return { ...cycle, fineshedDate: new Date() }
+              } else {
+                return cycle
+              }
+            }),
+          )
+
+          clearInterval(interval)
+          setActiveCycleId(null)
+        } else {
+          setAmountSecondsPassed(secondsDiference)
+        }
       }, 1000)
     }
 
     return () => {
       clearInterval(interval)
     }
-  }, [activeCycles])
+  }, [activeCycles, totalSeconds, activeCycleId])
 
   const task = watch('task')
   const isSubmitDisabled = !task
@@ -83,8 +103,8 @@ export const Home = () => {
   }
 
   function handleInterruptCycle() {
-    setCycles(
-      cycles.map((cycle) => {
+    setCycles((state) =>
+      state.map((cycle) => {
         if (cycle.id === activeCycleId) {
           return { ...cycle, interruptedDate: new Date() }
         } else {
@@ -96,7 +116,6 @@ export const Home = () => {
     setActiveCycleId(null)
   }
 
-  const totalSeconds = activeCycles ? activeCycles.minutesAmount * 60 : 0
   const currentSeconds = activeCycles ? totalSeconds - amountSecondsPassed : 0
 
   const minutesAmount = Math.floor(currentSeconds / 60)
@@ -137,7 +156,7 @@ export const Home = () => {
             id="minutesAmout"
             placeholder="00"
             step={5}
-            min={0}
+            min={5}
             max={60}
             disabled={!!activeCycles}
             {...register('minutesAmount', { valueAsNumber: true })}
