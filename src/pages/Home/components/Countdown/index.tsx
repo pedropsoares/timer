@@ -6,23 +6,23 @@ import { CountDownContainer, Separator } from './styles'
 
 export const Countdown = () => {
   const {
-    activeCycles,
+    activeCycle,
     activeCycleId,
     amountSecondsPassed,
     setSecondsPassed,
     markCurrentCyclesAsFinished,
   } = useContext(CycleContext)
 
-  const totalSeconds = activeCycles ? activeCycles.minutesAmount * 60 : 0
+  const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
 
   useEffect(() => {
     let interval: number
 
-    if (activeCycles) {
+    if (activeCycle) {
       interval = setInterval(() => {
         const secondsDiference = differenceInSeconds(
           new Date(),
-          activeCycles.starDate,
+          new Date(activeCycle.starDate),
         )
 
         if (secondsDiference >= totalSeconds) {
@@ -41,14 +41,14 @@ export const Countdown = () => {
       clearInterval(interval)
     }
   }, [
-    activeCycles,
+    activeCycle,
     totalSeconds,
     activeCycleId,
     markCurrentCyclesAsFinished,
     setSecondsPassed,
   ])
 
-  const currentSeconds = activeCycles ? totalSeconds - amountSecondsPassed : 0
+  const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0
 
   const minutesAmount = Math.floor(currentSeconds / 60)
   const secondsAmount = currentSeconds % 60
@@ -57,10 +57,10 @@ export const Countdown = () => {
   const seconds = String(secondsAmount).padStart(2, '0')
 
   useEffect(() => {
-    if (activeCycles) {
+    if (activeCycle) {
       document.title = `Restam - ${minutes}:${seconds}`
     }
-  }, [activeCycles, minutes, seconds])
+  }, [activeCycle, minutes, seconds])
 
   return (
     <CountDownContainer>
